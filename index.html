@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ WM 2026 Tippspiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ─────────────────────────────────────── */
+  :root {
+    --grass:   #1a7a3c;
+    --grass2:  #145e2e;
+    --gold:    #f0b429;
+    --gold2:   #c9922a;
+    --pitch:   #0d1f12;
+    --surface: #132118;
+    --card:    #1c2e22;
+    --border:  #2a4232;
+    --text:    #e8f5ec;
+    --muted:   #7aab89;
+    --white:   #ffffff;
+    --red:     #e05252;
+    --blue:    #4a9eff;
+    --radius:  10px;
+    --shadow:  0 4px 24px rgba(0,0,0,.45);
+  }
+
+  /* ── RESET ──────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--pitch);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -10%, #1a7a3c22 0%, transparent 70%);
+  }
+
+  /* ── HEADER ─────────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, var(--grass2) 0%, var(--grass) 60%, #229a4e 100%);
+    padding: 0 24px;
+    box-shadow: 0 2px 20px rgba(0,0,0,.6);
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-shadow: 0 2px 8px rgba(0,0,0,.4);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo span { color: var(--white); }
+
+  /* ── TABS ───────────────────────────────────────── */
+  nav {
+    display: flex; gap: 4px;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,.6);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--white); background: rgba(255,255,255,.1); }
+  .tab-btn.active {
+    background: var(--gold);
+    color: var(--pitch);
+    font-weight: 700;
+  }
+
+  /* ── MAIN ───────────────────────────────────────── */
+  main { max-width: 900px; margin: 0 auto; padding: 32px 16px 80px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION TITLE ──────────────────────────────── */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  /* ── PLAYER PICKER ──────────────────────────────── */
+  .player-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    box-shadow: var(--shadow);
+  }
+  .player-box label { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .player-select {
+    flex: 1; min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+    transition: border .2s;
+  }
+  .player-select:focus { border-color: var(--grass); }
+  .name-input {
+    flex: 1; min-width: 160px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    outline: none;
+    transition: border .2s;
+  }
+  .name-input::placeholder { color: var(--muted); }
+  .name-input:focus { border-color: var(--gold); }
+
+  /* ── BUTTONS ────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--pitch);
+  }
+  .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-green {
+    background: var(--grass);
+    color: var(--white);
+  }
+  .btn-green:hover { background: var(--grass2); }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+  /* ── ROUND HEADER ───────────────────────────────── */
+  .round-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 28px 0 12px;
+  }
+  .round-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+  .round-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── GAME CARD ──────────────────────────────────── */
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    transition: border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--border);
+    transition: background .2s;
+  }
+  .game-card.has-tip::before { background: var(--grass); }
+  .game-card.pts-3::before  { background: var(--gold); }
+  .game-card.pts-2::before  { background: var(--blue); }
+  .game-card.pts-1::before  { background: var(--muted); }
+  .game-card.pts-0::before  { background: var(--red); }
+
+  .team-name {
+    font-size: 14px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .team-home { text-align: right; }
+  .team-away { text-align: left; }
+
+  .score-area {
+    display: flex; align-items: center; gap: 6px; justify-content: center;
+  }
+  .score-input {
+    width: 42px; height: 42px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 20px; font-weight: 500;
+    text-align: center;
+    outline: none;
+    transition: border .2s, background .2s;
+    -moz-appearance: textfield;
+  }
+  .score-input::-webkit-inner-spin-button,
+  .score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .score-input:focus { border-color: var(--gold); background: #1e3028; }
+  .score-sep { color: var(--muted); font-size: 18px; font-weight: 700; }
+
+  .actual-result {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; font-weight: 500;
+    color: var(--gold);
+    text-align: center;
+    min-width: 50px;
+  }
+  .actual-result.pending { color: var(--muted); font-size: 12px; }
+
+  .pts-badge {
+    position: absolute; right: 12px; top: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: none;
+  }
+  .pts-3 .pts-badge { display: block; background: var(--gold); color: var(--pitch); }
+  .pts-2 .pts-badge { display: block; background: var(--blue); color: var(--pitch); }
+  .pts-1 .pts-badge { display: block; background: var(--muted); color: var(--pitch); }
+  .pts-0 .pts-badge { display: block; background: var(--red); color: var(--white); }
+
+  .date-label {
+    font-size: 11px; color: var(--muted);
+    text-align: center; margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── SAVE BAR ───────────────────────────────────── */
+  .save-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.5);
+    z-index: 99;
+    transform: translateY(100%);
+    transition: transform .3s ease;
+  }
+  .save-bar.visible { transform: translateY(0); }
+  .save-bar-text { font-size: 13px; color: var(--muted); }
+  .save-bar-text strong { color: var(--text); }
+
+  /* ── RANGLISTE ──────────────────────────────────── */
+  .rangliste-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .rangliste-table th {
+    background: var(--grass2);
+    padding: 12px 16px;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(255,255,255,.7);
+    text-align: center;
+  }
+  .rangliste-table th:nth-child(2) { text-align: left; }
+  .rangliste-table td {
+    padding: 12px 16px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    font-size: 14px;
+  }
+  .rangliste-table td:nth-child(2) { text-align: left; }
+  .rangliste-table tr:last-child td { border-bottom: none; }
+  .rangliste-table tr:hover td { background: #223328; }
+
+  .rank-pos {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--muted);
+  }
+  .rank-1 { color: #f0b429; }
+  .rank-2 { color: #aab8c2; }
+  .rank-3 { color: #cd7f32; }
+
+  .pts-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+  .stat-cell { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 13px; }
+
+  /* ── TOAST ──────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--grass); color: var(--white);
+    padding: 10px 22px; border-radius: 24px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    opacity: 0; transition: all .3s; pointer-events: none;
+    z-index: 200;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { background: var(--red); }
+
+  /* ── SPINNER ────────────────────────────────────── */
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── PUNKTESYSTEM BOX ───────────────────────────── */
+  .pts-legend {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .pts-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+  .pts-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 600px) {
+    .logo { font-size: 22px; }
+    .tab-btn { padding: 6px 10px; font-size: 12px; }
+    .game-card { padding: 12px 14px; }
+    .score-input { width: 36px; height: 36px; font-size: 16px; }
+    .team-name { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚽ <span>WM</span> 2026 <span style="color:rgba(255,255,255,.4);font-size:20px;margin:0 2px">|</span> Tippspiel</div>
+  <nav>
+    <button class="tab-btn active" data-tab="tipps">Meine Tipps</button>
+    <button class="tab-btn" data-tab="ergebnisse">Ergebnisse</button>
+    <button class="tab-btn" data-tab="rangliste">🏆 Rangliste</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ══ TAB: TIPPS ══════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-tipps">
+    <div class="section-title">Meine Tipps</div>
+    <p class="section-sub">Wähle deinen Namen oder leg einen neuen an, dann tipp alle Spiele.</p>
+
+    <div class="player-box">
+      <label>Dein Name:</label>
+      <select class="player-select" id="playerSelect">
+        <option value="">— Spieler wählen —</option>
+      </select>
+      <span style="color:var(--muted);font-size:13px">oder neu:</span>
+      <input class="name-input" id="newName" type="text" placeholder="Namen eingeben…" maxlength="30">
+      <button class="btn btn-gold" id="btnAddPlayer">+ Anlegen</button>
+    </div>
+
+    <div class="pts-legend">
+      <div class="pts-pill"><div class="pts-dot" style="background:var(--gold)"></div> <strong>3 Pkt</strong> – Exaktes Ergebnis</div>
+      <div class="pts-pill"><div class="pts-dot" style="background:var(--blue)"></div> <strong>2 Pkt</strong> – Richtige Differenz</div>
+      <div class="pts-pill"><div class="pts-dot" style="background:var(--muted)"></div> <strong>1 Pkt</strong> – Richtige Tendenz</div>
+      <div class="pts-pill"><div class="pts-dot" style="background:var(--red)"></div> <strong>0 Pkt</strong> – Falsch</div>
+    </div>
+
+    <div id="spieleList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- ══ TAB: ERGEBNISSE ═════════════════════════════ -->
+  <div class="tab-panel" id="tab-ergebnisse">
+    <div class="section-title">Ergebnisse eintragen</div>
+    <p class="section-sub">Trage hier nach jedem Spiel das offizielle Ergebnis ein.</p>
+    <div id="ergebnisseList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- ══ TAB: RANGLISTE ══════════════════════════════ -->
+  <div class="tab-panel" id="tab-rangliste">
+    <div class="section-title">🏆 Rangliste</div>
+    <p class="section-sub">Live-Punktestand – aktualisiert sich nach jedem eingetragenen Ergebnis.</p>
+    <div id="ranglisteContent"><div class="spinner"></div></div>
+  </div>
+
+</main>
+
+<!-- Save Bar -->
+<div class="save-bar" id="saveBar">
+  <div class="save-bar-text">Du hast <strong id="unsavedCount">0</strong> ungespeicherte Tipps</div>
+  <button class="btn btn-gold" id="btnSaveAll">💾 Alle speichern</button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG – HIER DEINE GOOGLE APPS SCRIPT URL EINTRAGEN
+// ══════════════════════════════════════════════════════
+const API_URL = "https://script.google.com/macros/s/AKfycby_wYsjyjmzvegWIWrUCeYeyj7R-MGb0Zmtb-KMd2bLUHEtjgRNMWPXUmM4aRvgVHH8bg/exec";
+// Beispiel: "https://script.google.com/macros/s/ABCDE.../exec"
+
+// ── STATE ─────────────────────────────────────────────
+let spiele = [], spieler = [], tipps = [];
+let currentPlayer = null;
+let pendingTipps = {};   // spielId -> {tipH, tipA}
+let saveTimeout = null;
+
+// ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  initTabs();
+  await loadAll();
+  renderSpielerSelect();
+  renderTipps();
+  renderErgebnisse();
+});
+
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'rangliste') renderRangliste();
+    });
+  });
+}
+
+// ── API ───────────────────────────────────────────────
+async function apiFetch(params) {
+  const url = API_URL + '?' + new URLSearchParams(params);
+  const r = await fetch(url);
+  return r.json();
+}
+
+async function apiPost(body) {
+  const r = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+async function loadAll() {
+  try {
+    const [s, sp, t] = await Promise.all([
+      apiFetch({ action: 'getSpiele' }),
+      apiFetch({ action: 'getSpieler' }),
+      apiFetch({ action: 'getTipps' })
+    ]);
+    spiele = s.spiele || [];
+    spieler = sp.spieler || [];
+    tipps = t.tipps || [];
+  } catch (e) {
+    showToast('Verbindungsfehler – API-URL korrekt?', true);
+  }
+}
+
+// ── SPIELER ───────────────────────────────────────────
+function renderSpielerSelect() {
+  const sel = document.getElementById('playerSelect');
+  sel.innerHTML = '<option value="">— Spieler wählen —</option>';
+  spieler.forEach(sp => {
+    const o = document.createElement('option');
+    o.value = sp.id; o.textContent = sp.name;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => {
+    currentPlayer = spieler.find(s => s.id === sel.value) || null;
+    pendingTipps = {};
+    updateSaveBar();
+    renderTipps();
+  });
+
+  document.getElementById('btnAddPlayer').addEventListener('click', async () => {
+    const name = document.getElementById('newName').value.trim();
+    if (!name) return showToast('Bitte Namen eingeben', true);
+    const res = await apiPost({ action: 'addSpieler', name });
+    if (res.error) return showToast(res.error, true);
+    if (!res.existing) spieler.push({ id: res.id, name });
+    renderSpielerSelect();
+    document.getElementById('playerSelect').value = res.id;
+    currentPlayer = { id: res.id, name };
+    document.getElementById('newName').value = '';
+    await loadAll();
+    renderTipps();
+    showToast(res.existing ? `Willkommen zurück, ${name}!` : `${name} angelegt! 🎉`);
+  });
+}
+
+// ── TIPPS RENDER ──────────────────────────────────────
+function getTippFor(spielId) {
+  if (!currentPlayer) return null;
+  return tipps.find(t => t.spielerId === currentPlayer.id && t.spielId === spielId) || null;
+}
+
+function calcPoints(tipH, tipA, ergH, ergA) {
+  if (ergH === null || ergA === null) return null;
+  if (tipH === null || tipA === null) return null;
+  tipH = +tipH; tipA = +tipA; ergH = +ergH; ergA = +ergA;
+  if (tipH === ergH && tipA === ergA) return 3;
+  if ((tipH - tipA) === (ergH - ergA)) return 2;
+  if (Math.sign(tipH - tipA) === Math.sign(ergH - ergA)) return 1;
+  return 0;
+}
+
+function renderTipps() {
+  const el = document.getElementById('spieleList');
+  if (!currentPlayer) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:48px 0;font-size:15px">
+      👆 Wähle deinen Namen oben, um deine Tipps einzutragen.
+    </div>`;
+    return;
+  }
+
+  const groups = {};
+  spiele.forEach(s => {
+    const key = s.gruppe ? `Gruppe ${s.gruppe}` : s.runde;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+
+  let html = '';
+  Object.entries(groups).forEach(([label, games]) => {
+    html += `<div class="round-header">
+      <div class="round-label">${label}</div>
+      <div class="round-line"></div>
+    </div>`;
+    games.forEach(spiel => {
+      const tipp = getTippFor(spiel.id);
+      const tipH = pendingTipps[spiel.id]?.tipH ?? tipp?.tipH;
+      const tipA = pendingTipps[spiel.id]?.tipA ?? tipp?.tipA;
+      const pts = (tipH !== undefined && tipH !== null && tipA !== undefined && tipA !== null)
+        ? calcPoints(tipH, tipA, spiel.ergH, spiel.ergA) : null;
+
+      const hasTip = tipH !== undefined && tipH !== null;
+      const ptsCls = pts === 3 ? 'pts-3' : pts === 2 ? 'pts-2' : pts === 1 ? 'pts-1' : pts === 0 ? 'pts-0' : '';
+      const ptsLabel = { 3:'3 PKT', 2:'2 PKT', 1:'1 PKT', 0:'0 PKT' }[pts] ?? '';
+
+      const ergStr = (spiel.ergH !== null && spiel.ergA !== null)
+        ? `${spiel.ergH} : ${spiel.ergA}`
+        : `<span class="pending">ausstehend</span>`;
+
+      html += `<div class="game-card ${hasTip ? 'has-tip' : ''} ${ptsCls}" data-id="${spiel.id}">
+        <div class="pts-badge">${ptsLabel}</div>
+        <div class="team-name team-home">${spiel.heim}</div>
+        <div>
+          <div class="score-area">
+            <input class="score-input tip-h" type="number" min="0" max="20"
+              value="${tipH ?? ''}" placeholder="–" data-id="${spiel.id}">
+            <span class="score-sep">:</span>
+            <input class="score-input tip-a" type="number" min="0" max="20"
+              value="${tipA ?? ''}" placeholder="–" data-id="${spiel.id}">
+          </div>
+          <div class="date-label">Ergebnis: <span class="actual-result ${spiel.ergH===null?'pending':''}">${ergStr}</span></div>
+        </div>
+        <div class="team-name team-away">${spiel.gast}</div>
+      </div>`;
+    });
+  });
+
+  el.innerHTML = html;
+
+  // Events auf Inputs
+  el.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const id = inp.dataset.id;
+      if (!pendingTipps[id]) pendingTipps[id] = {};
+      const card = el.querySelector(`.game-card[data-id="${id}"]`);
+      const h = card.querySelector('.tip-h').value;
+      const a = card.querySelector('.tip-a').value;
+      pendingTipps[id] = { tipH: h === '' ? null : +h, tipA: a === '' ? null : +a };
+      updateSaveBar();
+      // Autosave debounced
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => savePending(), 3000);
+    });
+  });
+}
+
+// ── SAVE ──────────────────────────────────────────────
+document.getElementById('btnSaveAll').addEventListener('click', savePending);
+
+async function savePending() {
+  if (!currentPlayer || Object.keys(pendingTipps).length === 0) return;
+  const entries = Object.entries(pendingTipps)
+    .filter(([, v]) => v.tipH !== null && v.tipA !== null);
+  if (!entries.length) return;
+
+  try {
+    await Promise.all(entries.map(([spielId, v]) =>
+      apiPost({ action: 'saveTipp', spielerId: currentPlayer.id, spielId, tipH: v.tipH, tipA: v.tipA })
+    ));
+    // Merge into tipps array
+    entries.forEach(([spielId, v]) => {
+      const idx = tipps.findIndex(t => t.spielerId === currentPlayer.id && t.spielId === spielId);
+      if (idx >= 0) { tipps[idx].tipH = v.tipH; tipps[idx].tipA = v.tipA; }
+      else tipps.push({ spielerId: currentPlayer.id, spielId, tipH: v.tipH, tipA: v.tipA });
+    });
+    pendingTipps = {};
+    updateSaveBar();
+    renderTipps();
+    showToast(`${entries.length} Tipp${entries.length>1?'s':''} gespeichert ✓`);
+  } catch (e) {
+    showToast('Fehler beim Speichern', true);
+  }
+}
+
+function updateSaveBar() {
+  const count = Object.values(pendingTipps)
+    .filter(v => v.tipH !== null && v.tipA !== null).length;
+  document.getElementById('unsavedCount').textContent = count;
+  document.getElementById('saveBar').classList.toggle('visible', count > 0);
+}
+
+// ── ERGEBNISSE RENDER ─────────────────────────────────
+function renderErgebnisse() {
+  const el = document.getElementById('ergebnisseList');
+  const groups = {};
+  spiele.forEach(s => {
+    const key = s.gruppe ? `Gruppe ${s.gruppe}` : s.runde;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+
+  let html = '';
+  Object.entries(groups).forEach(([label, games]) => {
+    html += `<div class="round-header">
+      <div class="round-label">${label}</div>
+      <div class="round-line"></div>
+    </div>`;
+    games.forEach(spiel => {
+      html += `<div class="game-card" style="grid-template-columns:1fr auto auto auto 1fr" data-eid="${spiel.id}">
+        <div class="team-name team-home">${spiel.heim}</div>
+        <input class="score-input erg-h" type="number" min="0" max="20"
+          value="${spiel.ergH ?? ''}" placeholder="–" style="border-color:${spiel.ergH!==null?'var(--gold)':'var(--border)'}">
+        <span class="score-sep">:</span>
+        <input class="score-input erg-a" type="number" min="0" max="20"
+          value="${spiel.ergA ?? ''}" placeholder="–" style="border-color:${spiel.ergA!==null?'var(--gold)':'var(--border)'}">
+        <div class="team-name team-away">${spiel.gast}</div>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+
+  // Debounced save per card
+  el.querySelectorAll('.game-card').forEach(card => {
+    let t;
+    const save = async () => {
+      const id = card.dataset.eid;
+      const h = card.querySelector('.erg-h').value;
+      const a = card.querySelector('.erg-a').value;
+      if (h === '' || a === '') return;
+      const res = await apiPost({ action: 'saveErgebnis', spielId: id, ergH: +h, ergA: +a });
+      if (res.ok) {
+        const sp = spiele.find(s => s.id === id);
+        if (sp) { sp.ergH = +h; sp.ergA = +a; }
+        card.querySelector('.erg-h').style.borderColor = 'var(--gold)';
+        card.querySelector('.erg-a').style.borderColor = 'var(--gold)';
+        showToast('Ergebnis gespeichert ✓');
+      }
+    };
+    card.querySelectorAll('.score-input').forEach(inp => {
+      inp.addEventListener('input', () => { clearTimeout(t); t = setTimeout(save, 1200); });
+    });
+  });
+}
+
+// ── RANGLISTE ─────────────────────────────────────────
+async function renderRangliste() {
+  const el = document.getElementById('ranglisteContent');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const data = await apiFetch({ action: 'getRangliste' });
+    const r = data.rangliste || [];
+    if (!r.length) {
+      el.innerHTML = `<p style="color:var(--muted);text-align:center;padding:40px">Noch keine Teilnehmer.</p>`;
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = `
+    <table class="rangliste-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Punkte</th>
+          <th>🎯 Exakt</th>
+          <th>📐 Differenz</th>
+          <th>↕ Tendenz</th>
+          <th>Getippt</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${r.map((p, i) => `
+        <tr>
+          <td><span class="rank-pos rank-${i+1}">${medals[i] || i+1}</span></td>
+          <td><strong>${p.name}</strong></td>
+          <td><span class="pts-big">${p.punkte}</span></td>
+          <td class="stat-cell">${p.exakt}</td>
+          <td class="stat-cell">${p.differenz}</td>
+          <td class="stat-cell">${p.tendenz}</td>
+          <td class="stat-cell">${p.getippt}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } catch (e) {
+    el.innerHTML = `<p style="color:var(--red);text-align:center;padding:40px">Fehler beim Laden.</p>`;
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+</script>
+</body>
+</html>
